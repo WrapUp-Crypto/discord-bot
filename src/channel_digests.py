@@ -1,14 +1,18 @@
-import discord
+import logging
 import aiohttp
 
+import discord
 from discord.ext import commands
 
-from src.constants import HEADERS, ICON_URL, WRAPUP_APP, WRAPUP_HOME
+from src.constants import HEADERS, ICON_URL, WRAPUP_APP, WRAPUP_HOME, BOT_PREFIX
 from src.backend_api import (
     get_channel_top_reacted_messages,
     get_channel_most_replied_messages,
 )
 from src.exceptions import BackendAPIError
+
+
+logger = logging.getLogger("bot")
 
 
 class Digests(commands.Cog):
@@ -18,7 +22,9 @@ class Digests(commands.Cog):
     @commands.group()
     async def digest(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send("Invalid `digest` command passed...")
+            msg = "Invalid `digest` command passed..."
+            logger.warning(msg)
+            await ctx.send(msg)
 
     @digest.command(name="channel")
     @commands.guild_only()
@@ -26,7 +32,9 @@ class Digests(commands.Cog):
         self, ctx, channel: discord.TextChannel = None, period: int = 1
     ):
         if period < 1 or period > 30:
-            await ctx.send("Period must be in range `[1 - 30]`")
+            msg = "Period must be in range `[1 - 30]`"
+            logger.warning(msg)
+            await ctx.send(msg)
             return
 
         channel = channel or ctx.channel
@@ -46,37 +54,40 @@ class Digests(commands.Cog):
                     since_days=period,
                 )
 
-            except BackendAPIError as e:
-                print(e)
+            except BackendAPIError:
                 await ctx.send("Failed to fetch data from WrapUp server :(")
                 return
 
+            day_str = "24h" if period == 1 else f"{period} days"
             embed = await self.format_digest(
                 ctx=ctx,
+                description=f"{channel.mention} channel digest for the last __{day_str}.__",
                 top_reacted=top_reacted,
                 most_replied=most_replied,
-                period=period,
-                channel=channel,
             )
 
             await ctx.send(embed=embed)
 
-    # Errors
     @channel_digest.error
     async def digest_error(self, ctx, error):
+        logger.error(error)
+
         if isinstance(error, commands.ChannelNotFound):
             await ctx.send("Channel not found.")
 
         elif isinstance(error, commands.PrivateMessageOnly):
             await ctx.send("WrapUp can't be used in DMs")
 
-        elif isinstance(error, commands.errors.CommandNotFound):
-            await ctx.send("Command not found.")
+        elif isinstance(error, commands.CommandNotFound):
+            await ctx.send(
+                f"Command not found. Use `{BOT_PREFIX}help` to see available command arguments."
+            )
 
         elif isinstance(error, commands.BadArgument):
-            await ctx.send("Invalid command arguments.")
-
-        print(type(error), error)
+            await ctx.send(
+                "Invalid command arguments. "
+                + f"Use `{BOT_PREFIX}help` to see available command arguments."
+            )
 
     async def format_message(self, ctx, message_id, max_words=15):
         message = await ctx.fetch_message(message_id)
@@ -90,12 +101,9 @@ class Digests(commands.Cog):
 
         return f"{author} - {content} - [View Message]({message.jump_url})"
 
-    async def format_digest(self, ctx, channel, period, top_reacted, most_replied):
+    async def format_digest(self, ctx, description, top_reacted, most_replied):
         embed = discord.Embed(colour=0xEC4899)
-        day_str = "24h" if period == 1 else f"{period} days"
-        embed.description = (
-            f"{channel.mention} channel digest for the last __{day_str}.__"
-        )
+        embed.description = description
 
         invoked_parents = " ".join(ctx.invoked_parents)
         command = f"{ctx.prefix}{invoked_parents} {ctx.command.name}"
@@ -137,8 +145,13 @@ class Digests(commands.Cog):
 
         learn_more = (
             f"**[Full Digest]({WRAPUP_APP})** | "
-            + f"**[Homepage]({WRAPUP_HOME})** | **Help** - `wu?help`"
+            + f"**[Homepage]({WRAPUP_HOME})** | **Help** - `{BOT_PREFIX}help`"
         )
         embed.add_field(name="Learn More", inline=False, value=learn_more)
 
         return embed
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        logger.error(error)
+        await ctx.send(error)

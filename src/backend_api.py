@@ -1,9 +1,12 @@
+import logging
 from datetime import timedelta, datetime
 
 from src.exceptions import BackendAPIError
 from src.constants import BACKEND_API
 
 URL = f"{BACKEND_API}/discord"
+
+logger = logging.getLogger("bot")
 
 
 async def get_channel_top_reacted_messages(
@@ -20,6 +23,7 @@ async def get_channel_top_reacted_messages(
             return resp["results"]
         else:
             msg = f"Error while fetching most reacted messages from {url}. Status code: {r.status}."
+            logger.error(msg)
             raise BackendAPIError(msg)
 
 
@@ -37,4 +41,5 @@ async def get_channel_most_replied_messages(
             return resp["results"]
         else:
             msg = f"Error while fetching most replied messages from {url}. Status code: {r.status}."
+            logger.error(msg)
             raise BackendAPIError(msg)
