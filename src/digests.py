@@ -45,6 +45,8 @@ class Digests(commands.Cog):
         name="channel", help="Generate a channel digest for a selected channel."
     )
     @commands.guild_only()
+    @commands.max_concurrency(number=25, wait=True, per=commands.BucketType.guild)
+    @commands.cooldown(rate=5, per=60, type=commands.BucketType.channel)
     async def channel_digest(
         self, ctx, channel: discord.TextChannel = None, period: int = 1
     ):
@@ -96,6 +98,8 @@ class Digests(commands.Cog):
         help="Generate a server digest for the current server.",
     )
     @commands.guild_only()
+    @commands.max_concurrency(number=25, wait=True, per=commands.BucketType.guild)
+    @commands.cooldown(rate=5, per=60, type=commands.BucketType.channel)
     async def server_digest(self, ctx, period: int = 1):
         if period < MIN_PERIOD or period > MAX_PERIOD:
             msg = (
@@ -166,6 +170,12 @@ class Digests(commands.Cog):
                 f"Command not found. Use `{BOT_PREFIX}help` to see available command arguments."
             )
 
+        elif isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(
+                "WrapUp bot called too many times in a short span of time. "
+                + "Please wait a minute or two before calling it again."
+            )
+
         elif isinstance(error, commands.BadArgument):
             await ctx.send(
                 "Invalid command arguments. "
@@ -183,7 +193,7 @@ class Digests(commands.Cog):
         else:
             content = message.content
 
-        return f"{author} - {content} - [View Message]({message.jump_url})"
+        return f"{author} — {content} — [View Message]({message.jump_url})"
 
     async def format_emerging_channel(self, channel_id, score):
         channel = await self.bot.fetch_channel(channel_id)
@@ -194,11 +204,11 @@ class Digests(commands.Cog):
         else:
             score_str = f"+{score * 100:.0f}%"
 
-        return f"{channel.mention} - `{score_str}`"
+        return f"{channel.mention} — `{score_str}`"
 
     async def format_busiest_channel(self, channel_id, n_msgs):
         channel = await self.bot.fetch_channel(channel_id)
-        return f"{channel.mention} - `{n_msgs}` human messages sent"
+        return f"{channel.mention} — `{n_msgs}` human messages sent"
 
     async def format_digest(
         self,
@@ -227,7 +237,7 @@ class Digests(commands.Cog):
                     ctx=ctx, message_id=int(msg["message"]["native_id"])
                 )
                 value.append(
-                    f"**{i+1}.** {formatted_msg} - `{int(msg['score'])} reacts`"
+                    f"**{i+1}.** {formatted_msg} (`{int(msg['score'])} reacts`)"
                 )
 
             value = "\n---\n".join(value)
@@ -247,7 +257,7 @@ class Digests(commands.Cog):
                     ctx=ctx, message_id=int(msg["message"]["native_id"])
                 )
                 value.append(
-                    f"**{i+1}.** {formatted_msg} - `{int(msg['n_replies'])} replies`"
+                    f"**{i+1}.** {formatted_msg} (`{int(msg['n_replies'])} replies`)"
                 )
 
             value = "\n---\n".join(value)
