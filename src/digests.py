@@ -35,15 +35,19 @@ class Digests(commands.Cog):
         self.bot = bot
         self.top_n_results = top_n_results
 
-    @commands.group(help="Group of commands that generate digests.")
+    @commands.group(
+        help="Group of sub-commands that generate digests.", aliases=["d", "dg", "dig"]
+    )
     async def digest(self, ctx):
         if ctx.invoked_subcommand is None:
-            msg = "Invalid `digest` command passed..."
+            msg = "Invalid `digest` sub-command passed."
             logger.warning(msg)
             await ctx.send(msg)
 
     @digest.command(
-        name="channel", help="Generate a channel digest for a selected channel."
+        name="channel",
+        help="Generate a channel digest for a selected channel.",
+        aliases=["c", "chn"],
     )
     @commands.guild_only()
     @commands.max_concurrency(number=25, wait=True, per=commands.BucketType.guild)
@@ -80,7 +84,14 @@ class Digests(commands.Cog):
                 )
 
             except BackendAPIError:
-                await ctx.send("Couldn't fetch data from WrapUp server 😢")
+                await ctx.send(
+                    "Couldn't fetch data from WrapUp server 😢. Please try again later."
+                )
+                return
+            except aiohttp.ClientConnectorError as e:
+                msg = f"Couldn't connect to WrapUp backend: {e}"
+                logger.error(msg)
+                await ctx.send("Couldn't connect to WrapUp server 😢")
                 return
 
             day_str = "24h" if period == 1 else f"{period} days"
@@ -97,6 +108,7 @@ class Digests(commands.Cog):
     @digest.command(
         name="server",
         help="Generate a server digest for the current server.",
+        aliases=["s", "srv", "srvr"],
     )
     @commands.guild_only()
     @commands.max_concurrency(number=25, wait=True, per=commands.BucketType.guild)
@@ -145,7 +157,15 @@ class Digests(commands.Cog):
                 )
 
             except BackendAPIError:
-                await ctx.send("Couldn't fetch data from WrapUp server 😢")
+                await ctx.send(
+                    "Couldn't fetch data from WrapUp server 😢. Please try again later."
+                )
+                return
+
+            except aiohttp.ClientConnectorError as e:
+                msg = f"Couldn't connect to WrapUp backend: {e}"
+                logger.error(msg)
+                await ctx.send("Couldn't connect to WrapUp server 😢")
                 return
 
             day_str = "24h" if period == 1 else f"{period} days"
@@ -180,8 +200,7 @@ class Digests(commands.Cog):
 
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(
-                "WrapUp bot called too many times in a short span of time. "
-                + "Please wait a minute or two before calling it again."
+                "Bot called too frequently. Please wait a minute before calling it again."
             )
 
         elif isinstance(error, commands.BadArgument):
@@ -189,6 +208,8 @@ class Digests(commands.Cog):
                 "Invalid command arguments. "
                 + f"Use `{BOT_PREFIX}help` to see available command arguments."
             )
+        else:
+            await ctx.send("Unknown error occurred. Please try again later.")
 
     @staticmethod
     async def format_message(ctx, message_id, max_words=15):
