@@ -1,8 +1,9 @@
 import logging
-from discord.ext import commands
-import discord
 
-from src.channel_digests import Digests
+import discord
+from discord.ext import commands
+
+from src.digests import Digests
 from src.constants import BOT_TOKEN, BOT_PREFIX, LOGGING_FILE
 
 logger = logging.getLogger("bot")

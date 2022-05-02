@@ -13,4 +13,5 @@ BOT_TOKEN="<string>" # Discord bot token
 BACKEND_API="http://localhost:8000/api"
 BACKEND_API_KEY="<backend-api-key>"
 BOT_PREFIX="wu?"
+ICON_URL="<WrapUp-Icon-URL>
 ```
