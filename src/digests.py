@@ -22,6 +22,7 @@ from src.backend_api import (
     get_server_top_reacted_messages,
     get_emerging_channels,
     get_busiest_channels,
+    get_server_pinned_messages,
 )
 from src.exceptions import BackendAPIError
 
@@ -136,6 +137,12 @@ class Digests(commands.Cog):
                     since_days=period,
                     limit=3,
                 )
+                pinned_messages = await get_server_pinned_messages(
+                    session=session,
+                    server_id=ctx.guild.id,
+                    since_days=period,
+                    limit=3,
+                )
 
             except BackendAPIError:
                 await ctx.send("Couldn't fetch data from WrapUp server 😢")
@@ -150,6 +157,7 @@ class Digests(commands.Cog):
                 top_n=self.top_n_results,
                 emerging_channels=emerging_channels,
                 busiest_channels=busiest_channels,
+                pinned_messages=pinned_messages,
             )
 
             await ctx.send(embed=embed)
@@ -218,6 +226,7 @@ class Digests(commands.Cog):
         most_replied,
         emerging_channels=None,
         busiest_channels=None,
+        pinned_messages=None,
         top_n=5,
     ):
         embed = discord.Embed(colour=THEME_COLOR)
@@ -240,7 +249,7 @@ class Digests(commands.Cog):
                     f"**{i+1}.** {formatted_msg} (`{int(msg['score'])} reacts`)"
                 )
 
-            value = "\n---\n".join(value)
+            value = "\n".join(value)
             value += "\n\u200B"
 
         embed.add_field(
@@ -260,12 +269,33 @@ class Digests(commands.Cog):
                     f"**{i+1}.** {formatted_msg} (`{int(msg['n_replies'])} replies`)"
                 )
 
-            value = "\n---\n".join(value)
+            value = "\n".join(value)
             value += "\n\u200B"
 
         embed.add_field(
             name=f"Top {top_n} Most Replied Messages", inline=False, value=value
         )
+
+        # Pinned messages
+        if pinned_messages is not None:
+            if len(pinned_messages) == 0:
+                value = "No data.\n\u200B"
+            else:
+                value = []
+                for i, msg in enumerate(pinned_messages):
+                    formatted_msg = await self.format_message(
+                        ctx=ctx, message_id=int(msg["native_id"])
+                    )
+                    value.append(f"**{i+1}.** {formatted_msg}")
+
+                value = "\n".join(value)
+                value += "\n\u200B"
+
+            embed.add_field(
+                name="3 Newest Pinned Messages",
+                inline=False,
+                value=value,
+            )
 
         # Emerging channels
         if emerging_channels is not None:
