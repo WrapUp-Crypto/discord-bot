@@ -32,7 +32,7 @@ def configure_logging(logger):
 
 
 configure_logging(logger)
-intents = discord.Intents(messages=True, guilds=True, emojis=True, reactions=True)
+intents = discord.Intents(guild_messages=True, guilds=True, emojis=True, reactions=True)
 
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
 

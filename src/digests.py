@@ -214,24 +214,24 @@ class Digests(commands.Cog):
             await ctx.send("Unknown error occurred. Please try again later.")
 
     @staticmethod
-    async def format_message(ctx, message_id, max_words=15):
-        try:
-            message = await ctx.fetch_message(message_id)
-        except Exception as e:
-            logger.error(e)
-            return "*Message from a Private Channel*"
-
-        author = message.author.mention
-        words = message.content.split(" ")
+    def format_message(msg, author_id, server_id, channel_id, message_id, max_words=15):
+        jump_url = f"https://discord.com/channels/{server_id}/{channel_id}/{message_id}"
+        author = f"<@{author_id}>"
+        words = msg.split(" ")
         if len(words) > max_words:
             content = " ".join(words[:max_words]) + "..."
         else:
-            content = message.content
+            content = msg
 
-        return f"{author} — {content} — [View Message]({message.jump_url})"
+        return f"{author} — {content} — [View Message]({jump_url})"
 
     async def format_emerging_channel(self, channel_id, score):
-        channel = await self.bot.fetch_channel(channel_id)
+        try:
+            channel = await self.bot.fetch_channel(channel_id)
+        except Exception as e:
+            logger.error(e)
+            return "__Unknown Channel__"
+
         if score < 0.1:
             score_str = f"+{score * 100:.2f}%"
         elif score < 1:
@@ -242,7 +242,12 @@ class Digests(commands.Cog):
         return f"{channel.mention} — `{score_str}`"
 
     async def format_busiest_channel(self, channel_id, n_msgs):
-        channel = await self.bot.fetch_channel(channel_id)
+        try:
+            channel = await self.bot.fetch_channel(channel_id)
+        except Exception as e:
+            logger.error(e)
+            return "__Unknown Channel__"
+
         return f"{channel.mention} — `{n_msgs}` human messages sent"
 
     async def format_digest(
@@ -273,8 +278,12 @@ class Digests(commands.Cog):
         else:
             value = []
             for i, msg in enumerate(top_reacted):
-                formatted_msg = await self.format_message(
-                    ctx=ctx, message_id=int(msg["message"]["native_id"])
+                formatted_msg = self.format_message(
+                    server_id=ctx.guild.id,
+                    channel_id=msg["message"]["channel"],
+                    message_id=msg["message"]["native_id"],
+                    author_id=msg["message"]["author"]["native_id"],
+                    msg=msg["message"]["raw_text"],
                 )
                 value.append(
                     f"**{i+1}.** {formatted_msg} (`{int(msg['score'])} reacts`)"
@@ -293,8 +302,12 @@ class Digests(commands.Cog):
         else:
             value = []
             for i, msg in enumerate(most_replied):
-                formatted_msg = await self.format_message(
-                    ctx=ctx, message_id=int(msg["message"]["native_id"])
+                formatted_msg = self.format_message(
+                    server_id=ctx.guild.id,
+                    channel_id=msg["message"]["channel"],
+                    message_id=msg["message"]["native_id"],
+                    author_id=msg["message"]["author"]["native_id"],
+                    msg=msg["message"]["raw_text"],
                 )
                 value.append(
                     f"**{i+1}.** {formatted_msg} (`{int(msg['n_replies'])} replies`)"
@@ -314,8 +327,12 @@ class Digests(commands.Cog):
             else:
                 value = []
                 for i, msg in enumerate(pinned_messages):
-                    formatted_msg = await self.format_message(
-                        ctx=ctx, message_id=int(msg["native_id"])
+                    formatted_msg = self.format_message(
+                        server_id=ctx.guild.id,
+                        channel_id=msg["channel"],
+                        message_id=msg["native_id"],
+                        author_id=msg["author"]["native_id"],
+                        msg=msg["raw_text"],
                     )
                     value.append(f"**{i+1}.** {formatted_msg}")
 
