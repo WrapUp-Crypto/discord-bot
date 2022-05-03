@@ -377,4 +377,3 @@ class Digests(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         logger.error(error)
-        await ctx.send(error)
