@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  discordpy:
+      build:
+        context: ./
+      container_name: discord-bot
+      restart: unless-stopped
+      env_file: .env.test
+      volumes:
+        - /var/www/discord-bots/logs/wrapup-bot/:/logs/

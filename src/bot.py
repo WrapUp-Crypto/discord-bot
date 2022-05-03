@@ -1,10 +1,12 @@
 import logging
+from logging.handlers import TimedRotatingFileHandler
+import os
 
 import discord
 from discord.ext import commands
 
 from src.digests import Digests
-from src.constants import BOT_TOKEN, BOT_PREFIX, LOGGING_FILE
+from src.constants import BOT_TOKEN, BOT_PREFIX, LOGGING_DIR
 
 logger = logging.getLogger("bot")
 
@@ -22,8 +24,9 @@ def configure_logging(logger):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
-    fh = logging.FileHandler(filename=LOGGING_FILE)
-    fh.setLevel(logging.INFO)
+    filename = os.path.join(LOGGING_DIR, "bot.log")
+    fh = TimedRotatingFileHandler(filename=filename, when="W0", backupCount=365 // 7)
+    fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 

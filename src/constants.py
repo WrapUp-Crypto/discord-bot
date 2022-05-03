@@ -17,7 +17,7 @@ ICON_URL = os.getenv(
 WRAPUP_HOME = "https://wrapup.ai"
 WRAPUP_APP = "https://app.wrapup.ai"
 
-LOGGING_FILE = os.getenv("LOGGING_FILE", default="./bot.log")
+LOGGING_DIR = os.getenv("LOGGING_DIR", default="./")
 
 MIN_PERIOD = 1
 MAX_PERIOD = 10
