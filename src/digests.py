@@ -215,7 +215,11 @@ class Digests(commands.Cog):
 
     @staticmethod
     async def format_message(ctx, message_id, max_words=15):
-        message = await ctx.fetch_message(message_id)
+        try:
+            message = await ctx.fetch_message(message_id)
+        except Exception as e:
+            logger.error(e)
+            return "__Message from a Private Channel__"
 
         author = message.author.mention
         words = message.content.split(" ")
