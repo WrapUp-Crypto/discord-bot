@@ -31,9 +31,8 @@ logger = logging.getLogger("bot")
 
 
 class Digests(commands.Cog):
-    def __init__(self, bot, top_n_results=5):
+    def __init__(self, bot):
         self.bot = bot
-        self.top_n_results = top_n_results
 
     @commands.group(
         help="Group of sub-commands that generate digests.", aliases=["d", "dg", "dig"]
@@ -66,6 +65,7 @@ class Digests(commands.Cog):
 
         channel = channel or ctx.channel
 
+        top_n_results = 5
         async with aiohttp.ClientSession(headers=HEADERS) as session:
             try:
                 top_reacted = await get_channel_top_reacted_messages(
@@ -73,14 +73,14 @@ class Digests(commands.Cog):
                     server_id=ctx.guild.id,
                     channel_id=channel.id,
                     since_days=period,
-                    limit=self.top_n_results,
+                    limit=top_n_results,
                 )
                 most_replied = await get_channel_most_replied_messages(
                     session=session,
                     server_id=ctx.guild.id,
                     channel_id=channel.id,
                     since_days=period,
-                    limit=self.top_n_results,
+                    limit=top_n_results,
                 )
 
             except BackendAPIError:
@@ -100,7 +100,8 @@ class Digests(commands.Cog):
                 description=f"{channel.mention} channel digest for the __last {day_str}.__",
                 top_reacted=top_reacted,
                 most_replied=most_replied,
-                top_n=self.top_n_results,
+                top_n=top_n_results,
+                title="Channel Digest",
             )
 
             await ctx.send(embed=embed)
@@ -129,13 +130,13 @@ class Digests(commands.Cog):
                     session=session,
                     server_id=ctx.guild.id,
                     since_days=period,
-                    limit=self.top_n_results,
+                    limit=3,
                 )
                 most_replied = await get_server_most_replied_messages(
                     session=session,
                     server_id=ctx.guild.id,
                     since_days=period,
-                    limit=self.top_n_results,
+                    limit=3,
                 )
                 emerging_channels = await get_emerging_channels(
                     session=session,
@@ -171,13 +172,14 @@ class Digests(commands.Cog):
             day_str = "24h" if period == 1 else f"{period} days"
             embed = await self.format_digest(
                 ctx=ctx,
-                description=f"`{ctx.guild.name}` server digest for the __last {day_str}.__",
+                description=f"**{ctx.guild.name}** server digest for the __last {day_str}.__",
                 top_reacted=top_reacted,
                 most_replied=most_replied,
-                top_n=self.top_n_results,
+                top_n=3,
                 emerging_channels=emerging_channels,
                 busiest_channels=busiest_channels,
                 pinned_messages=pinned_messages,
+                title="Server Digest",
             )
 
             await ctx.send(embed=embed)
@@ -248,18 +250,22 @@ class Digests(commands.Cog):
         emerging_channels=None,
         busiest_channels=None,
         pinned_messages=None,
+        title=None,
         top_n=5,
     ):
         embed = discord.Embed(colour=THEME_COLOR)
-        embed.description = description
+        embed.description = f"{description}\n\u200B"
+
+        if title is not None:
+            embed.title = title
 
         invoked_parents = " ".join(ctx.invoked_parents)
         command = f"{ctx.prefix}{invoked_parents} {ctx.command.name}"
-        embed.set_footer(text=f"Bot Invoked With {command}", icon_url=ICON_URL)
+        embed.set_footer(text=f"Bot Called With {command}", icon_url=ICON_URL)
 
         # Most reacted messages
         if len(top_reacted) == 0:
-            value = "No data.\n\u200B"
+            value = "No messages found.\n\u200B"
         else:
             value = []
             for i, msg in enumerate(top_reacted):
@@ -279,7 +285,7 @@ class Digests(commands.Cog):
 
         # Most replied messages
         if len(most_replied) == 0:
-            value = "No data.\n\u200B"
+            value = "No messages found.\n\u200B"
         else:
             value = []
             for i, msg in enumerate(most_replied):
@@ -300,7 +306,7 @@ class Digests(commands.Cog):
         # Pinned messages
         if pinned_messages is not None:
             if len(pinned_messages) == 0:
-                value = "No data.\n\u200B"
+                value = "No messages found.\n\u200B"
             else:
                 value = []
                 for i, msg in enumerate(pinned_messages):
@@ -321,7 +327,7 @@ class Digests(commands.Cog):
         # Emerging channels
         if emerging_channels is not None:
             if len(emerging_channels) == 0:
-                value = "No data.\n\u200B"
+                value = "No emerging channels found.\n\u200B"
             else:
                 value = []
                 for i, chn in enumerate(emerging_channels):
@@ -342,7 +348,7 @@ class Digests(commands.Cog):
         # Busiest channels
         if busiest_channels is not None:
             if len(busiest_channels) == 0:
-                value = "No data.\n\u200B"
+                value = "No active channels found.\n\u200B"
             else:
                 value = []
                 for i, chn in enumerate(busiest_channels):
@@ -362,7 +368,7 @@ class Digests(commands.Cog):
 
         learn_more = (
             f"**[Full Digest]({WRAPUP_APP})** | "
-            + f"**[Homepage]({WRAPUP_HOME})** | **Help** - `{BOT_PREFIX}help`"
+            + f"**[About WrapUp]({WRAPUP_HOME})** | **Help** - `{BOT_PREFIX}help`"
         )
         embed.add_field(name="Learn More", inline=False, value=learn_more)
 
