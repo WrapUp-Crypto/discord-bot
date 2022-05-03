@@ -219,7 +219,7 @@ class Digests(commands.Cog):
             message = await ctx.fetch_message(message_id)
         except Exception as e:
             logger.error(e)
-            return "__Message from a Private Channel__"
+            return "*Message from a Private Channel*"
 
         author = message.author.mention
         words = message.content.split(" ")
