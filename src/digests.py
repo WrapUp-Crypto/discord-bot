@@ -210,6 +210,8 @@ class Digests(commands.Cog):
                 "Invalid command arguments. "
                 + f"Use `{BOT_PREFIX}help` to see available command arguments."
             )
+        elif isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("This WrapUp command cannot be called in DMs.")
         else:
             await ctx.send("Unknown error occurred. Please try again later.")
 

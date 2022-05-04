@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 
 from src.digests import Digests
-from src.constants import BOT_TOKEN, BOT_PREFIX, LOGGING_DIR
+from src.constants import BOT_TOKEN, BOT_PREFIX, LOGGING_DIR, DISCORD_INVITE
 
 logger = logging.getLogger("bot")
 
@@ -32,9 +32,18 @@ def configure_logging(logger):
 
 
 configure_logging(logger)
-intents = discord.Intents(guild_messages=True, guilds=True, emojis=True, reactions=True)
+intents = discord.Intents(messages=True, guilds=True, emojis=True, reactions=True)
 
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
+
+
+@bot.command(help="Sends a WrapUp bot invite link to your DM.")
+async def invite(ctx):
+    dm = await ctx.author.create_dm()
+    await dm.send(
+        "Click on the following link to invite WrapUp bot to your Discord server."
+        + f"\n{DISCORD_INVITE}"
+    )
 
 
 @bot.event
