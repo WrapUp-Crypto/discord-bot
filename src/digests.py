@@ -14,6 +14,7 @@ from src.constants import (
     BOT_PREFIX,
     MIN_PERIOD,
     MAX_PERIOD,
+    WRAPUP_DISCORD,
 )
 from src.backend_api import (
     get_channel_top_reacted_messages,
@@ -265,7 +266,9 @@ class Digests(commands.Cog):
         top_n=5,
     ):
         embed = discord.Embed(colour=THEME_COLOR)
-        embed.description = f"{description}\n\u200B"
+        embed.description = (
+            f"{description}\nSee all commands with `{BOT_PREFIX}help`\n\u200B"
+        )
 
         if title is not None:
             embed.title = title
@@ -391,7 +394,8 @@ class Digests(commands.Cog):
 
         learn_more = (
             f"**[Full Digest]({WRAPUP_APP})** | "
-            + f"**[About WrapUp]({WRAPUP_HOME})** | **Help** - `{BOT_PREFIX}help`"
+            + f"**[About WrapUp]({WRAPUP_HOME})** | "
+            + f"**[Support]({WRAPUP_DISCORD})**"
         )
         embed.add_field(name="Learn More", inline=False, value=learn_more)
 

@@ -25,3 +25,4 @@ MAX_PERIOD = 10
 THEME_COLOR = 0xEC4899
 
 DISCORD_INVITE = "https://discord.com/api/oauth2/authorize?client_id=921389404390576128&permissions=274878024768&scope=bot"
+WRAPUP_DISCORD = "https://discord.com/invite/evKers3uCH"
