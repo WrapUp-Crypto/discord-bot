@@ -1,6 +1,6 @@
 # WrapUp Discord Bot
 
-Discord Bot for WrapUp
+Discord Bot for [WrapUp](https://wrapup.ai).
 
 ## Setting up the environment file
 
