@@ -222,9 +222,26 @@ class Digests(commands.Cog):
     ):
         jump_url = f"https://discord.com/channels/{server_id}/{channel_id}/{message_id}"
         author = f"<@{author_id}>"
+        msg_decoded = msg.encode("utf-8", "ignore")
 
-        if len(msg) > max_chars:
-            content = f"{msg[:max_chars]}..."
+        if len(msg_decoded) > max_chars:
+            # Maximum discord embed field value can be 1024 chars, so we cut each message
+            # with respect to its original encoding
+
+            # Find index for the space character that is closest to max_chars, but less or equal to
+            # max_chars
+            space_indexes = [
+                i for i, x in enumerate(msg_decoded[:max_chars]) if x == " "
+            ]
+
+            if len(space_indexes) == 0:
+                # No spaces found.
+                cutoff_index = max_chars
+            else:
+                cutoff_index = space_indexes[-1]
+
+            content_decoded = msg_decoded[:cutoff_index].decode("utf-8", "ignore")
+            content = f"{content_decoded}..."
         else:
             content = msg
 
