@@ -217,12 +217,14 @@ class Digests(commands.Cog):
             await ctx.send("Unknown error occurred. Please try again later.")
 
     @staticmethod
-    def format_message(msg, author_id, server_id, channel_id, message_id, max_words=15):
+    def format_message(
+        msg, author_id, server_id, channel_id, message_id, max_chars=15 * 7
+    ):
         jump_url = f"https://discord.com/channels/{server_id}/{channel_id}/{message_id}"
         author = f"<@{author_id}>"
-        words = msg.split(" ")
-        if len(words) > max_words:
-            content = " ".join(words[:max_words]) + "..."
+
+        if len(msg) > max_chars:
+            content = f"{msg[:max_chars]}..."
         else:
             content = msg
 
