@@ -198,7 +198,7 @@ class Digests(commands.Cog):
 
         elif isinstance(error, commands.CommandNotFound):
             await ctx.send(
-                f"Command not found. Use `{BOT_PREFIX}help` to see available command arguments."
+                f"Command not found. Use `{BOT_PREFIX}help` to see available commands."
             )
 
         elif isinstance(error, commands.CommandOnCooldown):
@@ -214,7 +214,7 @@ class Digests(commands.Cog):
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send("This WrapUp command cannot be called in DMs.")
         else:
-            await ctx.send("Unknown error occurred. Please try again later.")
+            await ctx.send("Something went wrong 😿. Our devs are working on it!")
 
     @staticmethod
     def format_message(
