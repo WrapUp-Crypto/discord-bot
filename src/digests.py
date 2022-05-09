@@ -218,7 +218,7 @@ class Digests(commands.Cog):
 
     @staticmethod
     def format_message(
-        msg, author_id, server_id, channel_id, message_id, max_chars=15 * 7
+        msg, author_id, server_id, channel_id, message_id, max_chars=12 * 6
     ):
         jump_url = f"https://discord.com/channels/{server_id}/{channel_id}/{message_id}"
         author = f"<@{author_id}>"
