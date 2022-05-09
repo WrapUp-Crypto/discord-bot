@@ -24,6 +24,7 @@ from src.backend_api import (
     get_emerging_channels,
     get_busiest_channels,
     get_server_pinned_messages,
+    get_channel_active_users,
 )
 from src.exceptions import BackendAPIError
 
@@ -83,6 +84,13 @@ class Digests(commands.Cog):
                     since_days=period,
                     limit=top_n_results,
                 )
+                active_users = await get_channel_active_users(
+                    session=session,
+                    server_id=ctx.guild.id,
+                    channel_id=channel.id,
+                    since_days=period,
+                    limit=5,
+                )
 
             except BackendAPIError:
                 await ctx.send(
@@ -101,6 +109,7 @@ class Digests(commands.Cog):
                 description=f"{channel.mention} channel digest for the __last {day_str}.__",
                 top_reacted=top_reacted,
                 most_replied=most_replied,
+                active_users=active_users,
                 top_n=top_n_results,
                 title="Channel Digest",
             )
@@ -281,6 +290,7 @@ class Digests(commands.Cog):
         emerging_channels=None,
         busiest_channels=None,
         pinned_messages=None,
+        active_users=None,
         title=None,
         top_n=5,
     ):
@@ -406,6 +416,28 @@ class Digests(commands.Cog):
 
             embed.add_field(
                 name="Top 3 Most Busiest Channels",
+                inline=False,
+                value=value,
+            )
+
+        # Most active users
+        if active_users is not None:
+            if len(active_users) == 0:
+                value = "No active users found.\n\u200B"
+            else:
+                value = []
+                for i, usr in enumerate(active_users):
+                    user_mention = f"<@{usr['id']}>"
+                    formatted_msg = None
+                    value.append(
+                        f"**{i+1}.** {user_mention} — `{usr['n_messages']}` messages"
+                    )
+
+                value = "\n".join(value)
+                value += "\n\u200B"
+
+            embed.add_field(
+                name="Top 5 Most Active Members",
                 inline=False,
                 value=value,
             )

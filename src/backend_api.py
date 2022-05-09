@@ -126,3 +126,21 @@ async def get_server_pinned_messages(session, server_id, limit=3, since_days=1):
             msg = f"Error while fetching pinned messages from {url}. Status code: {r.status}."
             logger.error(msg)
             raise BackendAPIError(msg)
+
+
+async def get_channel_active_users(
+    session, server_id, channel_id, limit=5, since_days=1
+):
+    from_timestamp = int((datetime.now() - timedelta(days=since_days)).timestamp())
+    url = (
+        f"{URL}/servers/{server_id}/channels/{channel_id}/"
+        + f"most-active-users/?limit={limit}&from_time={from_timestamp}"
+    )
+    async with session.get(url) as r:
+        if r.status == 200:
+            resp = await r.json()
+            return resp["results"]
+        else:
+            msg = f"Error while fetching most replied messages from {url}. Status code: {r.status}."
+            logger.error(msg)
+            raise BackendAPIError(msg)
