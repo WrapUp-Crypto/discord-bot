@@ -197,8 +197,6 @@ class Digests(commands.Cog):
     @channel_digest.error
     @server_digest.error
     async def digest_error(self, ctx, error):
-        logger.error(error)
-
         if isinstance(error, commands.ChannelNotFound):
             await ctx.send("Channel not found.")
 
