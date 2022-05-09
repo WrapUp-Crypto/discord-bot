@@ -66,7 +66,7 @@ class Digests(commands.Cog):
 
         channel = channel or ctx.channel
 
-        top_n_results = 5
+        top_n_results = 4
         async with aiohttp.ClientSession(headers=HEADERS) as session:
             try:
                 top_reacted = await get_channel_top_reacted_messages(
@@ -218,7 +218,7 @@ class Digests(commands.Cog):
 
     @staticmethod
     def format_message(
-        msg, author_id, server_id, channel_id, message_id, max_chars=11 * 6
+        msg, author_id, server_id, channel_id, message_id, max_chars=13 * 7
     ):
         jump_url = f"https://discord.com/channels/{server_id}/{channel_id}/{message_id}"
         author = f"<@{author_id}>"
@@ -339,7 +339,6 @@ class Digests(commands.Cog):
 
             value = "\n".join(value)
             value += "\n\u200B"
-
         embed.add_field(
             name=f"Top {top_n} Most Replied Messages", inline=False, value=value
         )
