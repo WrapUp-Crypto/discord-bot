@@ -6,7 +6,13 @@ import discord
 from discord.ext import commands
 
 from src.digests import Digests
-from src.constants import BOT_TOKEN, BOT_PREFIX, LOGGING_DIR, DISCORD_INVITE
+from src.help import Help
+from src.constants import (
+    BOT_TOKEN,
+    BOT_PREFIX,
+    LOGGING_DIR,
+    DISCORD_INVITE,
+)
 
 logger = logging.getLogger("bot")
 
@@ -34,7 +40,7 @@ def configure_logging(logger):
 configure_logging(logger)
 intents = discord.Intents(messages=True, guilds=True, emojis=True, reactions=True)
 
-bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
+bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents, help_command=None)
 
 
 @bot.command(help="Sends a WrapUp bot invite link to your DM.")
@@ -52,4 +58,6 @@ async def on_ready():
 
 
 bot.add_cog(Digests(bot))
+bot.add_cog(Help())
+
 bot.run(BOT_TOKEN)
